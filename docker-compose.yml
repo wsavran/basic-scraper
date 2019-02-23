@@ -1,7 +1,6 @@
-version: '2'
+version: '3'
 services:
     rabbit:
-        hostname: rabbit
         image: rabbitmq:latest
         environment:
             - RABBITMQ_DEFAULT_USER=admin
@@ -16,6 +15,7 @@ services:
             - .:/app
         links:
             - rabbit
+            - database:mongo
         depends_on:
             - rabbit
     database:
@@ -23,3 +23,5 @@ services:
         image: mongo:latest
         ports:
             - "27018:27017"
+        volumes:
+            - './data:/data/db'

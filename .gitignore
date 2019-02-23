@@ -1,3 +1,5 @@
 .DS_Store
 myapp/venv
 myapp/__pycache__
+data/
+.idea/

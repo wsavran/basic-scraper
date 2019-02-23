@@ -1,19 +1,28 @@
 import time
 import requests
+import traceback
+import pprint
 from pymongo import MongoClient
 from myapp.celery import app
 
 # set up mongo
-client=MongoClient('mongo', 27017)
-db = client['webscape']
-collection = db['test-data']
-post = db.test
+client = MongoClient('mongodb://database:27017')
+db = client.test_scraper
+info = db.info
 
-@app.task(bind=True, default_retry_delay=10) 
-def basic_scrape(self, url):
+
+@app.task()
+def basic_scrape(url):
+    response = requests.get(url)
     try:
-        request = requests.get(url)
-        post.insert({'status': request.status_code, "time": time.time()})
-    except Exception as e:
-        raise self.retry(exc=e)
-    return request.status_code
+        ins_id = info.insert_one({'time': time.time(),
+                                  'response': response.status_code,
+                                  'content': response.content}).inserted_id
+        pprint.pprint(info.find_one({"_id": ins_id}))
+        tb = 'Success'
+    except:
+        tb = traceback.format_exc()
+    finally:
+        print(tb)
+
+    return response.status_code, str(ins_id)
